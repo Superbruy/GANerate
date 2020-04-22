@@ -113,20 +113,22 @@ for epoch in range(1000):
         D.zero_grad()
 
         # make the real part bigger
-        label = torch.full((x.size(0),), real, device=device)
+        label = torch.full((batchsz,), real, device=device)
         output_D = D(x).view(-1)
         loss_real = criterion(output_D, label)
+        loss_real.backward()
         D_x = output_D.mean().item()
 
         # let the fake part smaller
         fake_label = label.fill_(0.)
-        output = G(init_noise).detach()
-        get = D(output).view(-1)
+        output = G(init_noise)
+        get = D(output.detach()).view(-1)
         loss_fake = criterion(get, fake_label)
+        loss_fake.backward()
         D_z1 = get.mean().item()
 
         loss_D = loss_fake + loss_real
-        loss_D.backward()
+        
         optimizer_D.step()
 
 
